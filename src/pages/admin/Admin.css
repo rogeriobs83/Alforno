@@ -1,0 +1,114 @@
+.admin-login {
+  max-width: 32rem;
+}
+
+.admin-login-form {
+  display: grid;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.admin-login-form label {
+  color: #2c1810;
+  display: grid;
+  font-size: 0.9rem;
+  font-weight: 700;
+  gap: 0.45rem;
+}
+
+.admin-login-form input {
+  background: #fff;
+  border: 1px solid #b8aaa3;
+  color: #2c1810;
+  font: inherit;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.7rem;
+}
+
+.admin-dashboard-header {
+  align-items: flex-end;
+  display: flex;
+  gap: 1.5rem;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.admin-dashboard-header .page-heading {
+  margin-bottom: 0;
+}
+
+.admin-logout,
+.delete-reservation {
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.admin-logout {
+  border: 1px solid #bf360c;
+  color: #bf360c;
+  padding: 0.7rem 1rem;
+}
+
+.reservations-table-wrapper {
+  overflow-x: auto;
+}
+
+.reservations-table {
+  border-collapse: collapse;
+  min-width: 52rem;
+  text-align: left;
+  width: 100%;
+}
+
+.reservations-table th,
+.reservations-table td {
+  border-bottom: 1px solid #e5e5e5;
+  padding: 1rem;
+  vertical-align: top;
+}
+
+.reservations-table th {
+  color: #2c1810;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.reservations-table td {
+  color: #5d514c;
+}
+
+.reservations-table td a {
+  color: #bf360c;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.reservations-table select {
+  background: #fff;
+  border: 1px solid #b8aaa3;
+  color: #2c1810;
+  font: inherit;
+  min-width: 7.5rem;
+  padding: 0.45rem;
+}
+
+.delete-reservation {
+  border: 1px solid #a51f11;
+  color: #a51f11;
+  padding: 0.45rem 0.7rem;
+}
+
+.delete-reservation:hover {
+  background: #a51f11;
+  color: #fff;
+}
+
+@media (max-width: 640px) {
+  .admin-dashboard-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

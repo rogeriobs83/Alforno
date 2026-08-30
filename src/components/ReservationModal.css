@@ -1,0 +1,102 @@
+.reservation-modal-backdrop {
+  align-items: center;
+  background: rgba(23, 12, 7, 0.72);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 1.5rem;
+  position: fixed;
+  z-index: 20;
+}
+
+.reservation-modal {
+  background: #fffaf6;
+  box-shadow: 0 1.5rem 4rem rgba(23, 12, 7, 0.35);
+  max-height: calc(100vh - 3rem);
+  max-width: 36rem;
+  overflow-y: auto;
+  padding: clamp(2rem, 5vw, 3rem);
+  position: relative;
+  width: 100%;
+}
+
+.reservation-modal h2 {
+  color: #2c1810;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  margin: 0 0 1.75rem;
+}
+
+.reservation-modal-close {
+  background: transparent;
+  border: 0;
+  color: #2c1810;
+  cursor: pointer;
+  font-size: 2rem;
+  line-height: 1;
+  padding: 0.25rem;
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+}
+
+.reservation-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.reservation-form label {
+  color: #2c1810;
+  display: grid;
+  font-size: 0.9rem;
+  font-weight: 700;
+  gap: 0.45rem;
+}
+
+.reservation-form input,
+.reservation-form select {
+  background: #fff;
+  border: 1px solid #b8aaa3;
+  border-radius: 0;
+  color: #2c1810;
+  font: inherit;
+  font-weight: 400;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.7rem;
+}
+
+.reservation-form input:focus,
+.reservation-form select:focus,
+.reservation-modal-close:focus-visible {
+  outline: 3px solid #f6c66f;
+  outline-offset: 2px;
+}
+
+.reservation-form-row {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr 1fr;
+}
+
+.reservation-form .button-primary {
+  justify-self: start;
+}
+
+.reservation-form .button-primary:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.reservation-success p {
+  color: #5d514c;
+  line-height: 1.6;
+  margin: 0 0 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .reservation-form-row {
+    grid-template-columns: 1fr;
+  }
+}
