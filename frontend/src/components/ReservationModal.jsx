@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { apiFetch } from '../api.js'
 import './ReservationModal.css'
 
 const initialForm = {
@@ -52,7 +53,7 @@ function ReservationModal({ isOpen, onClose }) {
     setIsSubmitting(true)
 
     try {
-      const response = await fetch('/api/reservations', {
+      const response = await apiFetch('/api/reservations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...form, partySize: Number(form.partySize) }),

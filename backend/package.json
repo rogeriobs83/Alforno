@@ -1,0 +1,21 @@
+{
+  "name": "alforno-backend",
+  "version": "1.0.0",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.4.2",
+    "mongodb": "^7.5.0",
+    "connect-mongo": "^6.0.0",
+    "express-session": "^1.19.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { apiFetch } from '../../api.js'
 import { useCart } from '../../context/useCart.js'
 import './Checkout.css'
 
@@ -58,7 +59,7 @@ function Checkout() {
     setIsSearchingAddresses(true)
 
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         `/api/addresses?query=${encodeURIComponent(form.postcode.trim())}`,
       )
       const data = await response.json()
@@ -93,7 +94,7 @@ function Checkout() {
     setIsSubmitting(true)
 
     try {
-      const response = await fetch('/api/orders', {
+      const response = await apiFetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

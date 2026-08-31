@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { apiFetch } from '../../api.js'
 import './Admin.css'
 
 function Admin() {
@@ -14,7 +15,7 @@ function Admin() {
     setError('')
 
     try {
-      const response = await fetch('/api/admin/reservations')
+      const response = await apiFetch('/api/admin/reservations')
       const data = await response.json()
 
       if (!response.ok) {
@@ -32,7 +33,7 @@ function Admin() {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const response = await fetch('/api/admin/session')
+        const response = await apiFetch('/api/admin/session')
         const data = await response.json()
 
         if (data.authenticated) {
@@ -54,7 +55,7 @@ function Admin() {
     setError('')
 
     try {
-      const response = await fetch('/api/admin/login', {
+      const response = await apiFetch('/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password }),
@@ -77,7 +78,7 @@ function Admin() {
     setError('')
 
     try {
-      const response = await fetch(`/api/admin/reservations/${reservationId}`, {
+      const response = await apiFetch(`/api/admin/reservations/${reservationId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
@@ -108,7 +109,7 @@ function Admin() {
     setError('')
 
     try {
-      const response = await fetch(`/api/admin/reservations/${reservationId}`, {
+      const response = await apiFetch(`/api/admin/reservations/${reservationId}`, {
         method: 'DELETE',
       })
       const data = await response.json()
@@ -129,7 +130,7 @@ function Admin() {
     new Date(`${reservation.date}T${reservation.time}`) < new Date()
 
   const handleLogout = async () => {
-    await fetch('/api/admin/logout', { method: 'POST' })
+    await apiFetch('/api/admin/logout', { method: 'POST' })
     setReservations([])
     setIsAuthenticated(false)
   }
