@@ -8,7 +8,7 @@ import { MongoClient, MongoError, ObjectId } from 'mongodb'
 
 const port = Number(process.env.PORT || 3001)
 const databaseName = process.env.MONGODB_DB || 'alforno'
-const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/admin'
+const mongoUri = process.env.MONGODB_URI
 const adminPassword = process.env.ADMIN_PASSWORD
 const sessionSecret = process.env.SESSION_SECRET
 const uberEatsClientSecret = process.env.UBER_EATS_CLIENT_SECRET
@@ -17,8 +17,44 @@ const frontendOrigins = (process.env.FRONTEND_ORIGIN || 'http://localhost:5173')
   .split(',')
   .map((origin) => origin.trim())
   .filter(Boolean)
-const client = new MongoClient(mongoUri, { serverSelectionTimeoutMS: 5000 })
+
+// Conexão com MongoDB otimizada para Serverless
+let clientPromise
+
+if (!mongoUri) {
+  console.error('MONGODB_URI não foi definida nas variáveis de ambiente!')
+} else {
+  const client = new MongoClient(mongoUri, {
+    serverSelectionTimeoutMS: 5000,
+    tls: true,
+    tlsAllowInvalidCertificates: true,
+  })
+  clientPromise = client.connect()
+}
+
 const app = express()
+
+// Middleware de Conexão com o Banco de Dados para Serverless
+app.use(async (req, res, next) => {
+  try {
+    if (!clientPromise) {
+      return res.status(500).json({ error: 'Erro na configuração do banco de dados.' })
+    }
+    const client = await clientPromise
+    const database = client.db(databaseName)
+    app.locals.orders = database.collection('orders')
+    app.locals.reservations = database.collection('reservations')
+    app.locals.uberEatsEvents = database.collection('uber_eats_events')
+    next()
+  } catch (error) {
+    console.error('Erro ao conectar ao MongoDB:', error)
+    res.status(500).json({ error: 'Erro de conexão com o banco de dados.' })
+  }
+})
+
+// ----------------------
+// VALIDATORS
+// ----------------------
 
 const validateString = (value, field, minLength, maxLength) => {
   if (typeof value !== 'string') {
@@ -155,6 +191,10 @@ const validateOrder = (body) => {
   }
 }
 
+// ----------------------
+// UBER SIGNATURE
+// ----------------------
+
 const verifyUberSignature = (rawBody, signature) => {
   if (!/^[a-f0-9]{64}$/i.test(signature)) {
     return false
@@ -188,74 +228,9 @@ const getUberEventKey = (event) => {
   return `${event.event_type}:${event.resource_id}:${event.user_id || ''}`
 }
 
-app.get('/api/webhooks/uber-eats', (_request, response) => {
-  response.json({
-    service: 'Uber Eats webhook',
-    status: 'online',
-    message: 'Send signed order events with POST to this endpoint.',
-  })
-})
-
-app.post(
-  '/api/webhooks/uber-eats',
-  express.raw({ limit: '100kb', type: 'application/json' }),
-  async (request, response) => {
-    if (!uberEatsClientSecret) {
-      response.status(503).end()
-      return
-    }
-
-    if (!Buffer.isBuffer(request.body)) {
-      response.status(400).end()
-      return
-    }
-
-    const signature = request.get('X-Uber-Signature') || ''
-    if (!verifyUberSignature(request.body, signature)) {
-      response.status(401).end()
-      return
-    }
-
-    let event
-    try {
-      event = JSON.parse(request.body.toString('utf8'))
-    } catch {
-      response.status(400).end()
-      return
-    }
-
-    if (!event || typeof event !== 'object' || Array.isArray(event)) {
-      response.status(400).end()
-      return
-    }
-
-    const eventKey = getUberEventKey(event)
-    if (!eventKey) {
-      response.status(400).end()
-      return
-    }
-
-    try {
-      await app.locals.uberEatsEvents.insertOne({
-        event,
-        eventKey,
-        eventType: event.event_type,
-        receivedAt: new Date(),
-        resourceId: event.resource_id,
-        userId: event.user_id,
-      })
-      response.status(200).end()
-    } catch (error) {
-      if (error instanceof MongoError && error.code === 11000) {
-        response.status(200).end()
-        return
-      }
-
-      console.error('Unable to store Uber Eats webhook event:', error)
-      response.status(500).end()
-    }
-  },
-)
+// ----------------------
+// MIDDLEWARE
+// ----------------------
 
 app.use(
   cors({
@@ -263,7 +238,9 @@ app.use(
     origin: frontendOrigins,
   }),
 )
+
 app.use(express.json({ limit: '10kb' }))
+
 app.use(
   session({
     cookie: {
@@ -279,9 +256,17 @@ app.use(
       collectionName: 'sessions',
       dbName: databaseName,
       mongoUrl: mongoUri,
+      mongoOptions: {
+        tls: true,
+        tlsAllowInvalidCertificates: true,
+      },
     }),
   }),
 )
+
+// ----------------------
+// ADMIN + ROUTES
+// ----------------------
 
 const requireAdmin = (request, response, next) => {
   if (request.session.isAdmin) {
@@ -328,6 +313,10 @@ app.get('/api/health', (_request, response) => {
   response.json({ status: 'online' })
 })
 
+// ----------------------
+// ADDRESSES
+// ----------------------
+
 app.get('/api/addresses', async (request, response) => {
   if (!getUkAddressApiKey) {
     response.status(503).json({ error: 'Address lookup is not configured.' })
@@ -359,6 +348,10 @@ app.get('/api/addresses', async (request, response) => {
     response.status(502).json({ error: 'Unable to reach the address lookup service.' })
   }
 })
+
+// ----------------------
+// ADMIN SESSION
+// ----------------------
 
 app.get('/api/admin/session', (request, response) => {
   response.json({ authenticated: Boolean(request.session.isAdmin) })
@@ -398,6 +391,10 @@ app.post('/api/admin/logout', requireAdmin, (request, response) => {
     response.status(204).end()
   })
 })
+
+// ----------------------
+// ADMIN RESERVATIONS
+// ----------------------
 
 app.get('/api/admin/reservations', requireAdmin, async (_request, response) => {
   try {
@@ -476,6 +473,10 @@ app.delete('/api/admin/reservations/:id', requireAdmin, async (request, response
   }
 })
 
+// ----------------------
+// ORDERS
+// ----------------------
+
 app.post('/api/orders', async (request, response) => {
   try {
     const order = validateOrder(request.body)
@@ -499,6 +500,10 @@ app.post('/api/orders', async (request, response) => {
   }
 })
 
+// ----------------------
+// RESERVATIONS
+// ----------------------
+
 app.post('/api/reservations', async (request, response) => {
   try {
     const reservation = validateReservation(request.body)
@@ -520,20 +525,18 @@ app.post('/api/reservations', async (request, response) => {
   }
 })
 
-const start = async () => {
-  await client.connect()
-  const database = client.db(databaseName)
-  app.locals.orders = database.collection('orders')
-  app.locals.reservations = database.collection('reservations')
-  app.locals.uberEatsEvents = database.collection('uber_eats_events')
-  await app.locals.uberEatsEvents.createIndex({ eventKey: 1 }, { unique: true })
-  await app.locals.uberEatsEvents.createIndex({ receivedAt: -1 })
-  app.listen(port, () => {
-    console.log(`Reservation API listening on http://localhost:${port}`)
+// ----------------------
+// EXECUÇÃO LOCAL E EXPORTAÇÃO VERCEL
+// ----------------------
+
+// Se não estiver em ambiente Vercel (rodando localmente com `npm start` ou `node`)
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+  clientPromise.then(() => {
+    app.listen(port, () => {
+      console.log(`Reservation API listening on http://localhost:${port}`)
+    })
   })
 }
 
-start().catch((error) => {
-  console.error('Unable to connect to MongoDB:', error)
-  process.exitCode = 1
-})
+// Exportação obrigatória para a Vercel
+export default app
