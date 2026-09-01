@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: alforno-api
+    runtime: node
+    rootDir: backend
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_DB
+        value: alforno
+      - key: MONGODB_URI
+        sync: false
+      - key: FRONTEND_ORIGIN
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: UBER_EATS_CLIENT_SECRET
+        sync: false
+      - key: GETUKADDRESS_API_KEY
+        sync: false

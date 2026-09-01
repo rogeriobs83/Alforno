@@ -26,13 +26,19 @@ if (!mongoUri) {
 } else {
   const client = new MongoClient(mongoUri, {
     serverSelectionTimeoutMS: 5000,
-    tls: true,
-    tlsAllowInvalidCertificates: true,
   })
   clientPromise = client.connect()
 }
 
 const app = express()
+
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1)
+}
+
+app.get('/api/health', (_request, response) => {
+  response.json({ status: 'ok' })
+})
 
 // Middleware de Conexão com o Banco de Dados para Serverless
 app.use(async (req, res, next) => {
@@ -245,7 +251,7 @@ app.use(
   session({
     cookie: {
       httpOnly: true,
-      sameSite: 'lax',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       secure: process.env.NODE_ENV === 'production',
     },
     name: 'alforno.session',
@@ -256,10 +262,6 @@ app.use(
       collectionName: 'sessions',
       dbName: databaseName,
       mongoUrl: mongoUri,
-      mongoOptions: {
-        tls: true,
-        tlsAllowInvalidCertificates: true,
-      },
     }),
   }),
 )
@@ -526,11 +528,10 @@ app.post('/api/reservations', async (request, response) => {
 })
 
 // ----------------------
-// EXECUÇÃO LOCAL E EXPORTAÇÃO VERCEL
+// EXECUCAO LOCAL E RENDER
 // ----------------------
 
-// Se não estiver em ambiente Vercel (rodando localmente com `npm start` ou `node`)
-if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+if (!process.env.VERCEL) {
   clientPromise.then(() => {
     app.listen(port, () => {
       console.log(`Reservation API listening on http://localhost:${port}`)
@@ -538,5 +539,4 @@ if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
   })
 }
 
-// Exportação obrigatória para a Vercel
 export default app
