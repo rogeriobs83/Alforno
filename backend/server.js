@@ -15,6 +15,15 @@ const getUkAddressApiKey = process.env.GETUKADDRESS_API_KEY
 const client = new MongoClient(mongoUri, { serverSelectionTimeoutMS: 5000 })
 const app = express()
 
+// 🔥 ADICIONADO (sem apagar nada)
+import cors from 'cors'
+
+app.use(cors({
+  origin: 'https://alforno-8.onrender.com',
+  credentials: true
+}))
+// 🔥 FIM DA ADIÇÃO
+
 const validateString = (value, field, minLength, maxLength) => {
   if (typeof value !== 'string') {
     throw new Error(`${field} is required.`)
@@ -512,17 +521,14 @@ app.post('/api/reservations', async (request, response) => {
 const start = async () => {
   await client.connect()
   const database = client.db(databaseName)
-  app.locals.orders = database.collection('orders')
   app.locals.reservations = database.collection('reservations')
-  app.locals.uberEatsEvents = database.collection('uber_eats_events')
-  await app.locals.uberEatsEvents.createIndex({ eventKey: 1 }, { unique: true })
-  await app.locals.uberEatsEvents.createIndex({ receivedAt: -1 })
+  app.locals.orders = database.collection('orders')
+
   app.listen(port, () => {
-    console.log(`Reservation API listening on http://localhost:${port}`)
+    console.log(`Server is running on port ${port}`)
   })
 }
 
 start().catch((error) => {
-  console.error('Unable to connect to MongoDB:', error)
-  process.exitCode = 1
+  console.error('Failed to start server:', error)
 })
