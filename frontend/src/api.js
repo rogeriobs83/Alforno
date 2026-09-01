@@ -1,4 +1,4 @@
-const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3001').replace(/\/$/, '')
-
-export const apiFetch = (path, options = {}) =>
-  fetch(`${apiBaseUrl}${path}`, { credentials: 'include', ...options })
+const apiBaseUrl =
+  import.meta.env.MODE === 'development'
+    ? 'http://localhost:3001'
+    : import.meta.env.VITE_API_URL.replace(/\/$/, '')
