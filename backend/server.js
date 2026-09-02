@@ -7,7 +7,7 @@ import { MongoClient, MongoError, ObjectId } from 'mongodb'
 
 const port = Number(process.env.PORT || 3001)
 const databaseName = process.env.MONGODB_DB || 'alforno'
-const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/admin'
+const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/alforno'
 const adminPassword = process.env.ADMIN_PASSWORD
 const sessionSecret = process.env.SESSION_SECRET
 const uberEatsClientSecret = process.env.UBER_EATS_CLIENT_SECRET
@@ -19,9 +19,10 @@ const app = express()
 import cors from 'cors'
 
 app.use(cors({
-  origin: 'https://alforno-8.onrender.com',
+  origin: ['http://localhost:5173', 'https://alforno-8.onrender.com'],
   credentials: true
 }))
+
 // 🔥 FIM DA ADIÇÃO
 
 const validateString = (value, field, minLength, maxLength) => {
@@ -266,7 +267,7 @@ app.use(
   session({
     cookie: {
       httpOnly: true,
-      sameSite: 'lax',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       secure: process.env.NODE_ENV === 'production',
     },
     name: 'alforno.session',

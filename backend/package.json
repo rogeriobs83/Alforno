@@ -4,16 +4,19 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
-  },
+  "start": "node server.js",
+  "dev:atlas": "cross-env MONGODB_URI='mongodb+srv://rsrogerio1_db_user:M5anDEEB8ooOuhPD@cluster0.gvk9e7l.mongodb.net/alforno' nodemon server.js",
+  "dev:local": "cross-env MONGODB_URI='mongodb://127.0.0.1:27017/alforno' nodemon server.js"
+},
+
   "dependencies": {
-    "express": "^5.2.1",
-    "cors": "^2.8.5",
-    "dotenv": "^17.4.2",
-    "mongodb": "^7.5.0",
     "connect-mongo": "^6.0.0",
-    "express-session": "^1.19.0"
+    "cors": "^2.8.6",
+    "cross-env": "^10.1.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "mongodb": "^7.5.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
