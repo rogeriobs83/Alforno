@@ -18,20 +18,21 @@ const app = express()
 import cors from 'cors'
 
 app.use(cors({
-  origin: (origin, callback) => {
-    const allowed = [
-      'http://localhost:5173',
-      'https://alforno-8.onrender.com'
-    ]
+ origin: (origin, callback) => {
+  const allowed = [
+    'http://localhost:5173',
+    'https://alforno-8.onrender.com'
+  ]
 
-    if (allowed.includes(origin) || !origin) {
-      callback(null, origin)
-    } else {
-      callback(new Error('Not allowed by CORS'))
-    }
-  },
-  credentials: true
+  if (allowed.includes(origin) || !origin) {
+    callback(null, origin)
+  } else {
+    callback(new Error('Not allowed by CORS'))
+  }
+},
+credentials: true
 }))
+
 
 const validateString = (value, field, minLength, maxLength) => {
   if (typeof value !== 'string') {
