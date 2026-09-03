@@ -18,8 +18,8 @@ const app = express()
 import cors from 'cors'
 
 app.use(cors({
-  origin: ['http://localhost:5173','https://alforno-8.onrender.com'],
-  credentials: true
+  origin: ['http://localhost:5173', 'https://alforno-8.onrender.com'],
+  credentials: true,
 }))
 
 const validateString = (value, field, minLength, maxLength) => {
@@ -279,7 +279,7 @@ app.use(
     }),
     cookie: {
       httpOnly: true,
-      sameSite: 'lax',
+      sameSite:'none',
       secure: isProduction,
       maxAge: 24 * 60 * 60 * 1000, // 1 day
     },
