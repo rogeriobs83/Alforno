@@ -279,7 +279,7 @@ app.use(
     }),
     cookie: {
       httpOnly: true,
-      sameSite: isProduction ? 'none' : 'lax',
+      sameSite: 'lax',
       secure: isProduction,
       maxAge: 24 * 60 * 60 * 1000, // 1 day
     },
@@ -337,36 +337,51 @@ app.get('/api/health', (_request, response) => {
 })
 
 app.get('/api/addresses', async (request, response) => {
-  if (!getUkAddressApiKey) {
-    response.status(503).json({ error: 'Address lookup is not configured.' })
-    return
-  }
-
   const query = typeof request.query.query === 'string' ? request.query.query.trim() : ''
+
   if (query.length < 3 || query.length > 100) {
     response.status(400).json({ error: 'Enter a postcode or address with at least 3 characters.' })
     return
   }
 
-  const addressUrl = new URL('https://getukaddress.com/api/v1/autocomplete')
-  addressUrl.searchParams.set('api_key', getUkAddressApiKey)
-  addressUrl.searchParams.set('query', query)
+  const url = new URL('https://nominatim.openstreetmap.org/search')
+  url.searchParams.set('q', query)
+  url.searchParams.set('countrycodes', 'gb')
+  url.searchParams.set('format', 'json')
+  url.searchParams.set('addressdetails', '1')
+  url.searchParams.set('limit', '10')
 
   try {
-    const addressResponse = await fetch(addressUrl, { signal: AbortSignal.timeout(5000) })
+    const addressResponse = await fetch(url, {
+      headers: {
+        'User-Agent': 'alforno-app (https://seu-site.com)'
+      },
+      signal: AbortSignal.timeout(5000)
+    })
 
     if (!addressResponse.ok) {
-      console.error(`Get UK Address lookup failed with HTTP ${addressResponse.status}.`)
+      console.error(`Nominatim lookup failed with HTTP ${addressResponse.status}.`)
       response.status(addressResponse.status).json({ error: 'Unable to find addresses for that postcode.' })
       return
     }
 
-    response.json(await addressResponse.json())
+    const data = await addressResponse.json()
+   const formatted = data.map(item => ({
+  summaryLine: item.display_name,
+  postcode: item.address?.postcode || query,
+  city: item.address?.city || item.address?.town || item.address?.village || '',
+  lat: item.lat,
+  lon: item.lon
+}));
+
+
+    response.json(formatted)
   } catch (error) {
-    console.error('Get UK Address lookup failed:', error)
+    console.error('Nominatim lookup failed:', error)
     response.status(502).json({ error: 'Unable to reach the address lookup service.' })
   }
 })
+
 
 app.get('/api/admin/session', (request, response) => {
   response.json({ authenticated: Boolean(request.session.isAdmin) })
