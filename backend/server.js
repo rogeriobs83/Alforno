@@ -15,15 +15,12 @@ const getUkAddressApiKey = process.env.GETUKADDRESS_API_KEY
 const client = new MongoClient(mongoUri, { serverSelectionTimeoutMS: 5000 })
 const app = express()
 
-// 🔥 ADICIONADO (sem apagar nada)
 import cors from 'cors'
 
 app.use(cors({
   origin: ['http://localhost:5173', 'https://alforno-8.onrender.com'],
-  credentials: true
+  credentials: true,
 }))
-
-// 🔥 FIM DA ADIÇÃO
 
 const validateString = (value, field, minLength, maxLength) => {
   if (typeof value !== 'string') {
@@ -38,25 +35,33 @@ const validateString = (value, field, minLength, maxLength) => {
   return normalizedValue
 }
 
+const validateEmail = (value) => {
+  const email = validateString(value, 'Email', 5, 254).toLowerCase()
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new Error('Enter a valid email address.')
+  }
+  return email
+}
+
+const validatePhone = (value) => {
+  const phone = validateString(value, 'Phone number', 7, 25)
+  if (!/^[0-9+() -]+$/.test(phone)) {
+    throw new Error('Enter a valid phone number.')
+  }
+  return phone
+}
+
 const validateReservation = (body) => {
   if (!body || typeof body !== 'object' || Array.isArray(body)) {
     throw new Error('Reservation data is required.')
   }
 
   const name = validateString(body.name, 'Name', 2, 80)
-  const email = validateString(body.email, 'Email', 5, 254).toLowerCase()
-  const phone = validateString(body.phone, 'Phone number', 7, 25)
+  const email = validateEmail(body.email)
+  const phone = validatePhone(body.phone)
   const date = validateString(body.date, 'Date', 10, 10)
   const time = validateString(body.time, 'Time', 5, 5)
   const partySize = Number(body.partySize)
-
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    throw new Error('Enter a valid email address.')
-  }
-
-  if (!/^[0-9+() -]+$/.test(phone)) {
-    throw new Error('Enter a valid phone number.')
-  }
 
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(`${date}T12:00:00Z`))) {
     throw new Error('Enter a valid reservation date.')
@@ -84,16 +89,8 @@ const validateOrder = (body) => {
   }
 
   const name = validateString(customer.name, 'Name', 2, 80)
-  const email = validateString(customer.email, 'Email', 5, 254).toLowerCase()
-  const phone = validateString(customer.phone, 'Phone number', 7, 25)
-
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    throw new Error('Enter a valid email address.')
-  }
-
-  if (!/^[0-9+() -]+$/.test(phone)) {
-    throw new Error('Enter a valid phone number.')
-  }
+  const email = validateEmail(customer.email)
+  const phone = validatePhone(customer.phone)
 
   if (!['collection', 'delivery'].includes(body.fulfillment)) {
     throw new Error('Choose collection or delivery.')
@@ -263,22 +260,29 @@ app.post(
 )
 
 app.use(express.json({ limit: '10kb' }))
+// Required on Render: must be set before app.use(session)
+app.set('trust proxy', 1)
+
+const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true'
+
 app.use(
   session({
-    cookie: {
-      httpOnly: true,
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      secure: process.env.NODE_ENV === 'production',
-    },
     name: 'alforno.session',
+    secret: sessionSecret || 'missing-session-secret',
     resave: false,
     saveUninitialized: false,
-    secret: sessionSecret || 'missing-session-secret',
+    proxy: true, // Required behind an HTTPS proxy
     store: MongoStore.create({
       collectionName: 'sessions',
       dbName: databaseName,
       mongoUrl: mongoUri,
     }),
+    cookie: {
+      httpOnly: true,
+      sameSite: isProduction ? 'none' : 'lax',
+      secure: isProduction,
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    },
   }),
 )
 
@@ -322,6 +326,11 @@ const isPastReservation = (reservation) => {
 app.get('/', (_request, response) => {
   response.json({ service: 'Alforno Reservation API', status: 'online' })
 })
+
+app.get("/", (req, res) => {
+  res.status(200).send("OK");
+});
+
 
 app.get('/api/health', (_request, response) => {
   response.json({ status: 'online' })
@@ -413,14 +422,19 @@ app.get('/api/admin/reservations', requireAdmin, async (_request, response) => {
   }
 })
 
-app.patch('/api/admin/reservations/:id', requireAdmin, async (request, response) => {
+const requireValidReservationId = (request, response) => {
   const { id } = request.params
-  const { status } = request.body
-
   if (!ObjectId.isValid(id)) {
     response.status(400).json({ error: 'Invalid reservation ID.' })
-    return
+    return null
   }
+  return id
+}
+
+app.patch('/api/admin/reservations/:id', requireAdmin, async (request, response) => {
+  const id = requireValidReservationId(request, response)
+  if (!id) return
+  const { status } = request.body
 
   if (!['pending', 'confirmed', 'cancelled'].includes(status)) {
     response.status(400).json({ error: 'Invalid reservation status.' })
@@ -447,12 +461,8 @@ app.patch('/api/admin/reservations/:id', requireAdmin, async (request, response)
 })
 
 app.delete('/api/admin/reservations/:id', requireAdmin, async (request, response) => {
-  const { id } = request.params
-
-  if (!ObjectId.isValid(id)) {
-    response.status(400).json({ error: 'Invalid reservation ID.' })
-    return
-  }
+  const id = requireValidReservationId(request, response)
+  if (!id) return
 
   try {
     const reservation = await app.locals.reservations.findOne({ _id: new ObjectId(id) })
@@ -533,3 +543,7 @@ const start = async () => {
 start().catch((error) => {
   console.error('Failed to start server:', error)
 })
+
+setInterval(() => {
+  fetch("https://seu-backend.onrender.com/");
+}, 300000); // 5 minutos
