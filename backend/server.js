@@ -273,6 +273,8 @@ app.post(
 app.use(express.json({ limit: '10kb' }))
 // Required on Render: must be set before app.use(session)
 app.set('trust proxy', 1)
+app.enable('trust proxy');
+
 
 const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true'
 
