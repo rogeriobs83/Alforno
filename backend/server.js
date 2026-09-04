@@ -18,7 +18,10 @@ const app = express()
 import cors from 'cors'
 
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://alforno-8.onrender.com'],
+  origin: [
+    'http://localhost:5173',
+    'https://rogeriobs.dev',
+    'https://www.rogeriobs.dev'],
   credentials: true,
 }))
 
