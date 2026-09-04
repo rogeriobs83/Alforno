@@ -4,6 +4,7 @@ import MongoStore from 'connect-mongo'
 import express from 'express'
 import session from 'express-session'
 import { MongoClient, MongoError, ObjectId } from 'mongodb'
+import cors from 'cors'
 
 const port = Number(process.env.PORT || 3001)
 const databaseName = process.env.MONGODB_DB || 'alforno'
@@ -14,8 +15,6 @@ const uberEatsClientSecret = process.env.UBER_EATS_CLIENT_SECRET
 const getUkAddressApiKey = process.env.GETUKADDRESS_API_KEY
 const client = new MongoClient(mongoUri, { serverSelectionTimeoutMS: 5000 })
 const app = express()
-
-import cors from 'cors'
 
 app.use(cors({
   origin: [
