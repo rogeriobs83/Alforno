@@ -1,130 +1,151 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { apiFetch } from '../../api.js'
-import { useCart } from '../../context/useCart.js'
-import './Checkout.css'
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { apiFetch } from "../../api.js";
+import { useCart } from "../../context/useCart.js";
+import "./Checkout.css";
 
 const initialForm = {
-  postcode: '',
-  email: '',
-  fulfillment: 'collection',
-  name: '',
-  notes: '',
-  paymentMethod: 'pay_on_fulfillment',
-  phone: '',
-}
+  postcode: "",
+  email: "",
+  fulfillment: "collection",
+  name: "",
+  notes: "",
+  paymentMethod: "pay_on_fulfillment",
+  phone: "",
+  streetNumber: "",
+};
 
 function Checkout() {
-  const { cartTotal, clearCart, items } = useCart()
-  const [form, setForm] = useState(initialForm)
-  const [error, setError] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [orderId, setOrderId] = useState('')
-  const [addresses, setAddresses] = useState([])
-  const [addressError, setAddressError] = useState('')
-  const [isSearchingAddresses, setIsSearchingAddresses] = useState(false)
-  const [selectedAddress, setSelectedAddress] = useState(null)
+  const { cartTotal, clearCart, items } = useCart();
+  const [form, setForm] = useState(initialForm);
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [orderId, setOrderId] = useState("");
+  const [addresses, setAddresses] = useState([]);
+  const [addressError, setAddressError] = useState("");
+  const [isSearchingAddresses, setIsSearchingAddresses] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState(null);
 
   if (!items.length && !orderId) {
     return (
       <section className="checkout-page">
         <p className="section-eyebrow">Checkout</p>
         <h1 className="page-heading">Your basket is empty.</h1>
-        <p className="page-description">Add items from our menu before checking out.</p>
+        <p className="page-description">
+          Add items from our menu before checking out.
+        </p>
         <Link className="button-primary" to="/menu">
           View menu
         </Link>
       </section>
-    )
+    );
   }
 
   const handleChange = (event) => {
-    const { name, value } = event.target
-    setForm((currentForm) => ({ ...currentForm, [name]: value }))
+    const { name, value } = event.target;
+    setForm((currentForm) => ({ ...currentForm, [name]: value }));
 
-    if (name === 'postcode') {
-      setAddresses([])
-      setAddressError('')
-      setSelectedAddress(null)
+    if (name === "postcode") {
+      setAddresses([]);
+      setAddressError("");
+      setSelectedAddress(null);
     }
-  }
+  };
 
   const handleAddressSearch = async () => {
     if (form.postcode.trim().length < 3) {
-      setAddressError('Enter a postcode with at least 3 characters.')
-      return
+      setAddressError("Enter a postcode with at least 3 characters.");
+      return;
     }
 
-    setAddressError('')
-    setIsSearchingAddresses(true)
+    setAddressError("");
+    setIsSearchingAddresses(true);
 
     try {
       const response = await apiFetch(
         `/api/addresses?query=${encodeURIComponent(form.postcode.trim())}`,
-      )
-      const data = await response.json()
+      );
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Unable to find addresses.')
+        throw new Error(data.error || "Unable to find addresses.");
       }
 
-      const results = Array.isArray(data) ? data : data.addresses || data.results || data.data
+      const results = Array.isArray(data)
+        ? data
+        : data.addresses || data.results || data.data;
 
       if (!Array.isArray(results) || !results.length) {
-        throw new Error('No addresses were found for that postcode.')
+        throw new Error("No addresses were found for that postcode.");
       }
 
-      setAddresses(results)
+      setAddresses(results);
     } catch (lookupError) {
-      setAddressError(lookupError.message)
+      setAddressError(lookupError.message);
     } finally {
-      setIsSearchingAddresses(false)
+      setIsSearchingAddresses(false);
     }
+  };
+
+ const handleSubmit = async (event) => {
+  event.preventDefault();
+  setError("");
+
+  // validação: se for delivery, precisa escolher endereço
+  if (form.fulfillment === "delivery" && !selectedAddress) {
+    setError("Choose an address for delivery.");
+    return;
   }
 
-  const handleSubmit = async (event) => {
-    event.preventDefault()
-    setError('')
+  // monta o endereço completo com o novo input
+  const fullAddress =
+    form.streetNumber && selectedAddress
+      ? `${form.streetNumber}, ${selectedAddress.summaryLine}`
+      : selectedAddress?.summaryLine || "";
 
-    if (form.fulfillment === 'delivery' && !selectedAddress) {
-      setError('Choose an address for delivery.')
-      return
+  setIsSubmitting(true);
+
+  try {
+    const response = await apiFetch("/api/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        customer: {
+          email: form.email,
+          name: form.name,
+          phone: form.phone,
+        },
+        deliveryAddress:
+          form.fulfillment === "delivery"
+            ? fullAddress
+            : undefined,
+        fulfillment: form.fulfillment,
+        items: items.map(({ name, price, quantity, size }) => ({
+          name,
+          price,
+          quantity,
+          size,
+        })),
+        notes: form.notes,
+        paymentMethod: form.paymentMethod,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Unable to submit your order.");
     }
 
-    setIsSubmitting(true)
-
-    try {
-      const response = await apiFetch('/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customer: {
-            email: form.email,
-            name: form.name,
-            phone: form.phone,
-          },
-          deliveryAddress:
-            form.fulfillment === 'delivery' ? selectedAddress.summaryLine : undefined,
-          fulfillment: form.fulfillment,
-          items: items.map(({ name, price, quantity, size }) => ({ name, price, quantity, size })),
-          notes: form.notes,
-          paymentMethod: form.paymentMethod,
-        }),
-      })
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Unable to submit your order.')
-      }
-
-      setOrderId(data.id)
-      clearCart()
-    } catch (submissionError) {
-      setError(submissionError.message)
-    } finally {
-      setIsSubmitting(false)
-    }
+    setOrderId(data.id);
+    clearCart();
+  } catch (submissionError) {
+    setError(submissionError.message);
+  } finally {
+    setIsSubmitting(false);
   }
+};
+;
 
   if (orderId) {
     return (
@@ -132,16 +153,16 @@ function Checkout() {
         <p className="section-eyebrow">Order received</p>
         <h1 className="page-heading">Thank you for your order.</h1>
         <p className="page-description">
-          Your order reference is <strong>{orderId}</strong>.{' '}
-          {form.paymentMethod === 'pay_on_fulfillment'
-            ? `Payment is due on${form.fulfillment === 'delivery' ? ' delivery.' : ' collection.'}`
-            : 'Your fictional test payment has been recorded.'}
+          Your order reference is <strong>{orderId}</strong>.{" "}
+          {form.paymentMethod === "pay_on_fulfillment"
+            ? `Payment is due on${form.fulfillment === "delivery" ? " delivery." : " collection."}`
+            : "Your fictional test payment has been recorded."}
         </p>
         <Link className="button-primary" to="/menu">
           Return to menu
         </Link>
       </section>
-    )
+    );
   }
 
   return (
@@ -153,7 +174,12 @@ function Checkout() {
           <h2>Your details</h2>
           <label>
             Full name
-            <input name="name" required value={form.name} onChange={handleChange} />
+            <input
+              name="name"
+              required
+              value={form.name}
+              onChange={handleChange}
+            />
           </label>
           <label>
             Email address
@@ -179,7 +205,7 @@ function Checkout() {
             <legend>How would you like to receive your order?</legend>
             <label className="fulfillment-option">
               <input
-                checked={form.fulfillment === 'collection'}
+                checked={form.fulfillment === "collection"}
                 name="fulfillment"
                 type="radio"
                 value="collection"
@@ -189,7 +215,7 @@ function Checkout() {
             </label>
             <label className="fulfillment-option">
               <input
-                checked={form.fulfillment === 'delivery'}
+                checked={form.fulfillment === "delivery"}
                 name="fulfillment"
                 type="radio"
                 value="delivery"
@@ -202,7 +228,7 @@ function Checkout() {
             <legend>Payment method</legend>
             <label className="fulfillment-option">
               <input
-                checked={form.paymentMethod === 'pay_on_fulfillment'}
+                checked={form.paymentMethod === "pay_on_fulfillment"}
                 name="paymentMethod"
                 type="radio"
                 value="pay_on_fulfillment"
@@ -212,7 +238,7 @@ function Checkout() {
             </label>
             <label className="fulfillment-option">
               <input
-                checked={form.paymentMethod === 'demo_card'}
+                checked={form.paymentMethod === "demo_card"}
                 name="paymentMethod"
                 type="radio"
                 value="demo_card"
@@ -222,7 +248,7 @@ function Checkout() {
             </label>
             <label className="fulfillment-option">
               <input
-                checked={form.paymentMethod === 'demo_wallet'}
+                checked={form.paymentMethod === "demo_wallet"}
                 name="paymentMethod"
                 type="radio"
                 value="demo_wallet"
@@ -231,7 +257,7 @@ function Checkout() {
               Demo Wallet
             </label>
           </fieldset>
-          {form.fulfillment === 'delivery' && (
+          {form.fulfillment === "delivery" && (
             <div className="address-lookup">
               <label>
                 Postcode
@@ -249,44 +275,72 @@ function Checkout() {
                 type="button"
                 onClick={handleAddressSearch}
               >
-                {isSearchingAddresses ? 'Searching...' : 'Find address'}
+                {isSearchingAddresses ? "Searching..." : "Find address"}
               </button>
               {addresses.length > 0 && (
                 <label>
                   Select your address
                   <select
                     required
-                    value={selectedAddress ? selectedAddress.summaryLine : ''}
+                    value={selectedAddress ? selectedAddress.summaryLine : ""}
                     onChange={(event) =>
                       setSelectedAddress(
                         addresses.find(
-                          (address) => address.summaryLine === event.target.value,
+                          (address) =>
+                            address.summaryLine === event.target.value,
                         ) || null,
                       )
                     }
                   >
                     <option value="">Select an address</option>
                     {addresses.map((address) => (
-                      <option key={address.summaryLine} value={address.summaryLine}>
+                      <option
+                        key={address.summaryLine}
+                        value={address.summaryLine}
+                      >
                         {address.summaryLine}
                       </option>
                     ))}
                   </select>
                 </label>
               )}
-              {addressError && <p className="form-error" role="alert">{addressError}</p>}
+
+              <label>
+                Street and door number
+                <input
+                  name="streetNumber"
+                  placeholder="Ex: Street 123"
+                  value={form.streetNumber}
+                  onChange={handleChange}
+                  required
+                />
+              </label>
+              {addressError && (
+                <p className="form-error" role="alert">
+                  {addressError}
+                </p>
+              )}
             </div>
           )}
           <label>
             Order notes <span>(optional)</span>
             <textarea name="notes" value={form.notes} onChange={handleChange} />
           </label>
-          {error && <p className="form-error" role="alert">{error}</p>}
-          <button className="button-primary" disabled={isSubmitting} type="submit">
-            {isSubmitting ? 'Submitting...' : 'Place order'}
+          {error && (
+            <p className="form-error" role="alert">
+              {error}
+            </p>
+          )}
+          <button
+            className="button-primary"
+            disabled={isSubmitting}
+            type="submit"
+          >
+            {isSubmitting ? "Submitting..." : "Place order"}
           </button>
           <p className="checkout-payment-note">
-            Demo Card and Demo Wallet are fictional payment methods for testing only.
+            Demo Card and Demo Wallet are fictional payment methods for testing
+            only.
           </p>
         </form>
 
@@ -310,7 +364,7 @@ function Checkout() {
         </aside>
       </div>
     </section>
-  )
+  );
 }
 
-export default Checkout
+export default Checkout;
