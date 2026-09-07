@@ -1,0 +1,293 @@
+.menu-heading {
+  margin-bottom: clamp(3rem, 7vw, 5rem);
+}
+
+.menu-section-navigation {
+  background: #f7f3ef;
+  border-block: 1px solid #e5e5e5;
+  display: flex;
+  gap: 0.75rem;
+  margin: -1rem 0 3rem;
+  overflow-x: auto;
+  padding: 0.85rem 0;
+  position: sticky;
+  scrollbar-width: none;
+  top: 0;
+  z-index: 5;
+}
+
+.menu-section-navigation::-webkit-scrollbar {
+  display: none;
+}
+
+.menu-section-navigation a {
+  background: #fff;
+  border: 1px solid #d8c9bf;
+  color: #2c1810;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.5rem 0.7rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.menu-section-navigation a.active {
+  background: #bf360c;
+  border-color: #bf360c;
+  color: #fff;
+}
+
+.menu-category {
+  border-top: 1px solid #d8c9bf;
+  max-width: 100%;
+  padding-top: 1.5rem;
+}
+
+.menu-category + .menu-category {
+  margin-top: clamp(4rem, 9vw, 7rem);
+}
+
+.menu-category-heading {
+  align-items: baseline;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.menu-category-heading h2 {
+  color: #2c1810;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: -0.04em;
+  margin: 0;
+}
+
+.menu-category-heading p {
+  color: #bf360c;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.menu-items {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.menu-item {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.menu-item-image {
+  display: block;
+  height: clamp(12rem, 25vw, 16rem);
+  object-fit: cover;
+  width: 100%;
+}
+
+.menu-item-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 10.5rem;
+  padding: 1.25rem;
+}
+
+.menu-item-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.menu-item h3 {
+  color: #2c1810;
+  font-size: 1rem;
+  letter-spacing: 0.03em;
+  margin: 0 0 0.45rem;
+  text-transform: uppercase;
+}
+
+.menu-item p {
+  color: #5d514c;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.dietary-labels {
+  color: #bf360c;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.menu-price {
+  color: #2c1810;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pizza-size-selector {
+  align-items: center;
+  color: #5d514c;
+  display: flex;
+  font-size: 0.8rem;
+  font-weight: 700;
+  gap: 0.4rem;
+}
+
+.pizza-size-selector select {
+  background: #fff;
+  border: 1px solid #b8aaa3;
+  color: #2c1810;
+  font: inherit;
+  padding: 0.3rem;
+}
+
+.menu-add-button {
+  background: #2c1810;
+  border: 0;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-left: auto;
+  padding: 0.6rem 0.75rem;
+}
+
+.menu-add-button:hover {
+  background: #bf360c;
+}
+
+.menu-category-note {
+  color: #5d514c;
+  font-style: italic;
+  line-height: 1.6;
+  margin: 1.5rem 0 0;
+}
+
+.steak-sauces {
+  border-top: 1px solid #d8c9bf;
+  margin-top: clamp(4rem, 9vw, 7rem);
+  max-width: 100%;
+  padding-top: 1.5rem;
+}
+
+.steak-sauces h3 {
+  color: #2c1810;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  letter-spacing: -0.04em;
+  margin: 0 0 1.5rem;
+}
+
+.steak-sauce-list {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.steak-sauce {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  display: flex;
+  flex-direction: column;
+  min-height: 12rem;
+  padding: 1.25rem;
+}
+
+.steak-sauce h4 {
+  color: #2c1810;
+  font-size: 1rem;
+  margin: 0 0 0.75rem;
+  text-transform: uppercase;
+}
+
+.steak-sauce p {
+  color: #5d514c;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.steak-sauce > span {
+  color: #2c1810;
+  font-weight: 700;
+  margin-top: auto;
+  padding-top: 1rem;
+}
+
+.menu-allergy-notice {
+  background: #2c1810;
+  color: #fff;
+  margin-top: clamp(4rem, 9vw, 7rem);
+  max-width: 100%;
+  padding: clamp(2rem, 5vw, 3.5rem);
+}
+
+.menu-allergy-notice h2 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  margin: 0 0 1rem;
+}
+
+.menu-allergy-notice p {
+  color: #e2d7d2;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 36rem;
+}
+
+.menu-allergy-notice dl {
+  display: flex;
+  gap: 1.5rem;
+  margin: 1.5rem 0 0;
+}
+
+.menu-allergy-notice dl div {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.menu-allergy-notice dt {
+  color: #f6c66f;
+  font-weight: 700;
+}
+
+.menu-allergy-notice dd {
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .menu-category-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .menu-items {
+    grid-template-columns: 1fr;
+  }
+
+  .steak-sauce-list {
+    grid-template-columns: 1fr;
+  }
+
+  .menu-allergy-notice dl {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
