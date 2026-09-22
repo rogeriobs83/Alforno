@@ -417,6 +417,7 @@ app.get("/api/health", (_request, response) => {
 // 📍 ENDEREÇOS — NOMINATIM / OPENSTREETMAP
 // ------------------------------------------------------------
 app.get("/api/addresses", async (request, response) => {
+  
   const query =
     typeof request.query.query === "string" ? request.query.query.trim() : "";
 
@@ -439,7 +440,9 @@ app.get("/api/addresses", async (request, response) => {
   try {
     const addressResponse = await fetch(url, {
       headers: {
-        "User-Agent": "alforno-app (https://seu-site.com)",
+        "User-Agent": "alforno-app (https://rogeriobs.dev)",
+        "Accept-Language": "en-GB",
+        "from": "rogeriobs@hotmail.co.uk"
       },
       //signal: AbortSignal.timeout(50000),
     });
@@ -472,6 +475,10 @@ app.get("/api/addresses", async (request, response) => {
       .json({ error: "Unable to reach the address lookup service." });
   }
 });
+
+import rateLimit from "express-rate-limit";
+app.use("/api/addresses", rateLimit({ windowMs: 1000, max: 1 }));
+app.use("/api/admin", rateLimit({ windowMs: 1000, max: 1 }));
 
 // ------------------------------------------------------------
 // 🔐 ADMIN — SESSÃO, LOGIN, LOGOUT
