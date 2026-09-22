@@ -49,9 +49,8 @@
   font-size: 1rem;
   min-height: 2.75rem;
   padding: 0.55rem 0.7rem;
-}z
-
-.checkout-form textarea {
+}
+z .checkout-form textarea {
   min-height: 6rem;
   resize: vertical;
 }
@@ -71,10 +70,6 @@
 .address-lookup {
   min-width: 0;
 }
-
-
-
-
 
 .checkout-form fieldset {
   border: 1px solid #e5e5e5;
