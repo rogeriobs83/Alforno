@@ -476,10 +476,6 @@ app.get("/api/addresses", async (request, response) => {
   }
 });
 
-import rateLimit from "express-rate-limit";
-app.use("/api/addresses", rateLimit({ windowMs: 1000, max: 1 }));
-app.use("/api/admin", rateLimit({ windowMs: 1000, max: 1 }));
-
 // ------------------------------------------------------------
 // 🔐 ADMIN — SESSÃO, LOGIN, LOGOUT
 // ------------------------------------------------------------
