@@ -21,23 +21,39 @@ const app = express();
 // ------------------------------------------------------------
 // 🌐 CORS E HEADERS
 // ------------------------------------------------------------
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5173",
-      "https://rogeriobs.dev",
-      "https://www.rogeriobs.dev",
-    ],
-    credentials: true,
-  }),
-);
+app.use(cors({
+  origin: (origin, callback) => {
+    // Permite chamadas sem origin (tipo Postman, desktop local)
+    if (!origin) return callback(null, true);
+
+    // Permite qualquer origem local
+    if (origin.startsWith("http://localhost") ||
+        origin.startsWith("http://127.0.0.1") ||
+        origin.startsWith("http://192.168.") ||
+        origin.startsWith("http://0.0.0.0")) {
+      return callback(null, true);
+    }
+
+    // Permite teu domínio
+    if (origin === "https://rogerios.dev" ||
+        origin === "https://www.rogerios.dev") {
+      return callback(null, true);
+    }
+
+    // Bloqueia o resto
+    return callback(new Error("Origin não permitido pelo CORS"));
+  },
+  credentials: true
+}));
 
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", req.headers.origin);
   res.header("Access-Control-Allow-Credentials", "true");
-  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
+});
+
+app.listen(3001, "0.0.0.0", () => {
+  console.log("Backend rodando e aceitando conexões externas");
 });
 
 // ------------------------------------------------------------
@@ -93,7 +109,7 @@ const validateReservation = (body) => {
   const partySize = Number(body.partySize);
 
   if (
-    !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
+     !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
     Number.isNaN(Date.parse(`${date}T12:00:00Z`))
   ) {
     throw new Error("Enter a valid reservation date.");
@@ -340,7 +356,7 @@ app.use(
     cookie: {
       httpOnly: true,
       sameSite: isProduction ? "none" : "lax",
-      secure: isProduction,
+      secure: false,
       maxAge: 24 * 60 * 60 * 1000,
     },
   }),
