@@ -18,7 +18,7 @@ function App() {
     <div className="app-shell">
       <header className="app-header">
         <NavLink className="brand" to="/" onClick={() => setIsMenuOpen(false)}>
-          ALFORNO
+          <img id="logo" src="/logo.png" alt="Pane & Braci Logo" />
         </NavLink>
 
         <button
@@ -61,7 +61,7 @@ function App() {
       </main>
 
       <footer className="app-footer">
-        <p className="footer-company">Agostinha Ltd / Alforno Restaurant</p>
+        <p className="footer-company">Agostinha Ltd / Pane & Braci Restaurant</p>
         <address>
           349 Upper Richmond Road
           <br />

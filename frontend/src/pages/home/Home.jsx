@@ -30,7 +30,7 @@ function Home() {
           <p className="section-eyebrow">About us</p>
           <h2 className="about-title">Italian tradition served with warmth.</h2>
           <p className="about-text">
-            At Alforno, every recipe begins with respect for ingredients and
+            At Pane & Braci, every recipe begins with respect for ingredients and
             the pleasure of sharing a good meal.
           </p>
           <p className="about-text">
@@ -41,7 +41,7 @@ function Home() {
         <img
           className="about-image"
           src="https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1000&q=85"
-          alt="Calamari dish prepared by Alforno"
+          alt="Calamari dish prepared by Pane & Braci"
         />
       </section>
       <section className="opening-hours" aria-labelledby="opening-hours-title">
@@ -121,7 +121,7 @@ function Home() {
           <div className="contact-details">
             <h3>Contact</h3>
             <a href="tel:+442088787522">020 8878 7522</a>
-            <a href="mailto:alfornoinputney@gmail.com">alfornoinputney@gmail.com</a>
+            <a href="mailto:Pane & Braciinputney@gmail.com">Pane & Braciinputney@gmail.com</a>
             <div aria-label="Social media channels" className="social-icons">
               <svg aria-hidden="true" viewBox="0 0 24 24">
                 <path d="M13.5 21v-8h2.75l.41-3h-3.16V8.09c0-.87.25-1.47 1.5-1.47h1.8V3.94c-.31-.04-1.38-.14-2.62-.14-2.6 0-4.38 1.59-4.38 4.51V10H7v3h2.8v8h3.7Z" />

@@ -15,8 +15,12 @@
   position: relative;
 }
 
-.brand {
-  color: #bf360c;
+.brand img {
+  height: 100px;
+  width: auto;
+}
+
+.brand-name {
   font-size: 1.25rem;
   font-weight: 800;
   letter-spacing: 0.12em;
