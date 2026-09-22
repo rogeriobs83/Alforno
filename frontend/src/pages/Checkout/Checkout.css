@@ -56,6 +56,26 @@
   resize: vertical;
 }
 
+.checkout-form select {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.checkout-form option {
+  white-space: nowrap;
+}
+
+.address-lookup {
+  min-width: 0;
+}
+
+
+
+
+
 .checkout-form fieldset {
   border: 1px solid #e5e5e5;
   display: flex;

@@ -20,7 +20,7 @@ const app = express();
 
 // ------------------------------------------------------------
 // 🌐 CORS E HEADERS
-// ------------------------------------------------------------
+// --------------------------------zz----------------------------
 app.use(cors({
   origin: (origin, callback) => {
     // Permite chamadas sem origin (tipo Postman, desktop local)
@@ -50,10 +50,6 @@ app.use((req, res, next) => {
   res.header("Access-Control-Allow-Credentials", "true");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
-});
-
-app.listen(3001, "0.0.0.0", () => {
-  console.log("Backend rodando e aceitando conexões externas");
 });
 
 // ------------------------------------------------------------
@@ -445,7 +441,7 @@ app.get("/api/addresses", async (request, response) => {
       headers: {
         "User-Agent": "alforno-app (https://seu-site.com)",
       },
-      signal: AbortSignal.timeout(5000),
+      //signal: AbortSignal.timeout(50000),
     });
 
     if (!addressResponse.ok) {
@@ -698,7 +694,7 @@ const start = async () => {
   app.locals.orders = database.collection("orders");
   app.locals.uberEatsEvents = database.collection("uberEatsEvents");
 
-  app.listen(port, () => {
+  app.listen(port, "0.0.0.0", () => {
     console.log(`Server is running on port ${port}`);
   });
 };
