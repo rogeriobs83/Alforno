@@ -35,8 +35,8 @@ app.use(cors({
     }
 
     // Permite teu domínio
-    if (origin === "https://rogerios.dev" ||
-        origin === "https://www.rogerios.dev") {
+    if (origin === "https://rogeriobs.dev" ||
+        origin === "https://www.rogeriobs.dev") {
       return callback(null, true);
     }
 
